@@ -33,8 +33,12 @@ Voice AI system for Concept Carton that:
 - [x] Create GHL sync endpoint
 - [x] Create call trigger endpoint
 - [x] Configure environment variables
-- [ ] Push to GitHub
-- [ ] Deploy to Vercel
+- [x] Push to GitHub
+- [x] Deploy to Vercel
+- [x] Create Supabase project (klwtrlkwkzakotckvhac)
+- [x] Apply database migration
+- [x] Set VAPI webhook URL on assistant
+- [x] Configure Vercel env vars
 
 ## Success Criteria
 
@@ -48,4 +52,26 @@ Voice AI system for Concept Carton that:
 ---
 
 **Created:** 2026-01-16
-**Status:** Implementation Complete - Pending Deployment
+**Status:** Deployed - Demo Mode Active
+
+## Configuration Summary
+
+**Live URLs:**
+- Dashboard: https://carton-neon.vercel.app
+- GitHub: https://github.com/Qualiasolutions/carton
+
+**Supabase Project:** `klwtrlkwkzakotckvhac`
+- URL: https://klwtrlkwkzakotckvhac.supabase.co
+- Dashboard: https://supabase.com/dashboard/project/klwtrlkwkzakotckvhac
+
+**VAPI Assistant:** `b156dc91-38ea-48f0-927c-e6401b565807`
+- Webhook URL: https://carton-neon.vercel.app/api/vapi/webhook
+- Phone Number: +442039856195 (UK)
+
+**Manual Steps Required:**
+1. Get `SUPABASE_SERVICE_ROLE_KEY` from Supabase dashboard → Settings → API → service_role key
+2. Update in Vercel: `vercel env add SUPABASE_SERVICE_ROLE_KEY production --force`
+3. Add GoHighLevel credentials when ready:
+   - `GHL_API_KEY` - Your GHL API key
+   - `GHL_LOCATION_ID` - Your GHL location ID
+4. Redeploy: `vercel --prod`

@@ -53,15 +53,18 @@ export async function POST(request: NextRequest) {
       .update({ status: 'calling' })
       .eq('id', leadId)
 
+    // Demo mode: Always call the demo number for testing
+    const DEMO_NUMBER = '+447920274763'
+
     // Trigger VAPI call
     const vapiCall = await createOutboundCall({
       assistantId,
       phoneNumberId,
-      customerNumber: lead.phone,
+      customerNumber: DEMO_NUMBER, // Demo: always call Fawzi's number
       assistantOverrides: {
         variableValues: {
           lead_name: lead.name,
-          practice_name: 'Medical Practice' // TODO: Make configurable
+          practice_name: 'Concept Carton'
         }
       }
     })
