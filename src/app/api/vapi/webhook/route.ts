@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 
-// VAPI Webhook Handler
-// Receives call events and tool calls from VAPI
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -14,126 +11,59 @@ export async function POST(request: NextRequest) {
     const messageType = body.message?.type
 
     switch (messageType) {
-      case 'status-update': {
-        // Call status changed
-        const { call } = body
-        const status = call.status === 'in-progress' ? 'in-progress' :
-                       call.status === 'ended' ? 'completed' : 'pending'
-
-        await supabase
-          .from('calls')
-          .update({ status })
-          .eq('vapi_call_id', call.id)
-
-        // Also update lead status
-        const { data: callData } = await supabase
-          .from('calls')
-          .select('lead_id')
-          .eq('vapi_call_id', call.id)
-          .single()
-
-        if (callData?.lead_id) {
-          const leadStatus = status === 'in-progress' ? 'calling' :
-                            status === 'completed' ? 'called' : 'new'
-          await supabase
-            .from('leads')
-            .update({ status: leadStatus })
-            .eq('id', callData.lead_id)
-        }
-
-        return NextResponse.json({ received: true })
-      }
-
-      case 'end-of-call-report': {
-        // Call ended with full report
-        const { call, message } = body
-
-        await supabase
-          .from('calls')
-          .update({
-            status: 'completed',
-            transcript: message.transcript,
-            summary: message.summary,
-            duration_seconds: message.durationSeconds,
-            ended_reason: message.endedReason,
-            cost: message.cost
-          })
-          .eq('vapi_call_id', call.id)
-
-        return NextResponse.json({ received: true })
-      }
-
       case 'tool-calls': {
-        // Handle tool calls from the assistant
         const results = await Promise.all(
           body.message.toolCalls.map(async (toolCall: { id: string; function: { name: string; arguments: Record<string, unknown> } }) => {
             const { name, arguments: args } = toolCall.function
 
-            switch (name) {
-              case 'book_appointment': {
-                // Get lead from call
-                const { data: callData } = await supabase
-                  .from('calls')
-                  .select('lead_id')
-                  .eq('vapi_call_id', body.call.id)
-                  .single()
+            if (name === 'book_appointment') {
+              const { date, time, notes } = args as { date: string; time: string; notes?: string }
+              const appointmentTime = new Date(`${date}T${time}:00`)
 
-                if (callData?.lead_id) {
-                  // Update lead with appointment
-                  await supabase
-                    .from('leads')
-                    .update({
-                      status: 'booked',
-                      appointment_time: args.datetime as string,
-                      notes: args.notes as string || null
-                    })
-                    .eq('id', callData.lead_id)
+              // Get customer info from call
+              const customerNumber = body.call?.customer?.number || 'Unknown'
+              const customerName = body.call?.assistantOverrides?.variableValues?.lead_name || 'Unknown'
 
-                  return {
-                    toolCallId: toolCall.id,
-                    result: JSON.stringify({
-                      success: true,
-                      message: `Appointment booked for ${args.datetime}`
-                    })
-                  }
-                }
+              // Save to appointments table
+              const { error } = await supabase
+                .from('appointments')
+                .insert({
+                  lead_name: customerName,
+                  lead_phone: customerNumber,
+                  appointment_time: appointmentTime.toISOString(),
+                  notes: notes || null
+                })
 
+              if (error) {
+                console.error('Appointment save error:', error)
                 return {
                   toolCallId: toolCall.id,
-                  result: JSON.stringify({ success: false, message: 'Lead not found' })
+                  result: JSON.stringify({ success: false, message: 'Failed to book' })
                 }
               }
 
-              case 'mark_not_interested': {
-                const { data: callData } = await supabase
-                  .from('calls')
-                  .select('lead_id')
-                  .eq('vapi_call_id', body.call.id)
-                  .single()
-
-                if (callData?.lead_id) {
-                  await supabase
-                    .from('leads')
-                    .update({ status: 'lost', notes: args.reason as string || 'Not interested' })
-                    .eq('id', callData.lead_id)
-                }
-
-                return {
-                  toolCallId: toolCall.id,
-                  result: JSON.stringify({ success: true, message: 'Lead marked as not interested' })
-                }
+              return {
+                toolCallId: toolCall.id,
+                result: JSON.stringify({
+                  success: true,
+                  message: `Appointment confirmed for ${date} at ${time}`
+                })
               }
+            }
 
-              default:
-                return {
-                  toolCallId: toolCall.id,
-                  result: JSON.stringify({ error: 'Unknown tool' })
-                }
+            return {
+              toolCallId: toolCall.id,
+              result: JSON.stringify({ error: 'Unknown tool' })
             }
           })
         )
 
         return NextResponse.json({ results })
+      }
+
+      case 'end-of-call-report': {
+        console.log('Call ended:', body.call?.id)
+        return NextResponse.json({ received: true })
       }
 
       default:
