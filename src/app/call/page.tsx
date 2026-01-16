@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Phone, PhoneOff, Loader2, Mic, MicOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import Vapi from '@vapi-ai/web'
 
 const ASSISTANT_ID = 'b156dc91-38ea-48f0-927c-e6401b565807'
@@ -73,58 +73,77 @@ export default function CallPage() {
   const isActive = status === 'connecting' || status === 'connected'
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <div className="text-center space-y-8 max-w-md">
-        <h1 className="text-4xl font-bold tracking-tight">Talk to Sophie</h1>
-        <p className="text-muted-foreground">
-          {status === 'idle' && 'Click to start a conversation'}
-          {status === 'connecting' && 'Connecting...'}
-          {status === 'connected' && 'Connected - speak now'}
-          {status === 'error' && 'Connection failed'}
-        </p>
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Image src="/logo.svg" alt="Concept Carton" width={180} height={40} priority />
+            <span className="text-xs text-muted-foreground border-l pl-2 ml-1">Voice AI</span>
+          </div>
+          <nav className="flex items-center gap-4">
+            <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Calendar</a>
+            <a href="/leads" className="text-sm text-muted-foreground hover:text-foreground">Leads</a>
+            <a href="/call" className="ml-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg">
+              Call
+            </a>
+          </nav>
+        </div>
+      </header>
 
-        <div className="flex gap-4 justify-center">
-          <Button
-            size="lg"
-            className={`w-32 h-32 rounded-full text-2xl ${isActive ? 'bg-red-500 hover:bg-red-600' : ''}`}
-            onClick={isActive ? endCall : startCall}
-            disabled={status === 'connecting'}
-          >
-            {status === 'connecting' ? (
-              <Loader2 className="w-12 h-12 animate-spin" />
-            ) : isActive ? (
-              <PhoneOff className="w-12 h-12" />
-            ) : (
-              <Phone className="w-12 h-12" />
-            )}
-          </Button>
+      <main className="flex flex-col items-center justify-center p-6" style={{ minHeight: 'calc(100vh - 140px)' }}>
+        <div className="text-center space-y-8 max-w-md">
+          <h1 className="text-4xl font-bold tracking-tight">Talk to Sophie</h1>
+          <p className="text-muted-foreground">
+            {status === 'idle' && 'Click to start a conversation'}
+            {status === 'connecting' && 'Connecting...'}
+            {status === 'connected' && 'Connected - speak now'}
+            {status === 'error' && 'Connection failed'}
+          </p>
 
-          {status === 'connected' && (
+          <div className="flex gap-4 justify-center">
             <Button
               size="lg"
-              variant={isMuted ? 'destructive' : 'outline'}
-              className="w-20 h-20 rounded-full"
-              onClick={toggleMute}
+              className={`w-32 h-32 rounded-full text-2xl ${isActive ? 'bg-red-500 hover:bg-red-600' : ''}`}
+              onClick={isActive ? endCall : startCall}
+              disabled={status === 'connecting'}
             >
-              {isMuted ? (
-                <MicOff className="w-8 h-8" />
+              {status === 'connecting' ? (
+                <Loader2 className="w-12 h-12 animate-spin" />
+              ) : isActive ? (
+                <PhoneOff className="w-12 h-12" />
               ) : (
-                <Mic className="w-8 h-8" />
+                <Phone className="w-12 h-12" />
               )}
             </Button>
+
+            {status === 'connected' && (
+              <Button
+                size="lg"
+                variant={isMuted ? 'destructive' : 'outline'}
+                className="w-20 h-20 rounded-full"
+                onClick={toggleMute}
+              >
+                {isMuted ? (
+                  <MicOff className="w-8 h-8" />
+                ) : (
+                  <Mic className="w-8 h-8" />
+                )}
+              </Button>
+            )}
+          </div>
+
+          {error && (
+            <p className="text-red-500">{error}</p>
           )}
         </div>
+      </main>
 
-        {error && (
-          <p className="text-red-500">{error}</p>
-        )}
-
-        <div className="pt-8">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-            ← Back to Dashboard
-          </Link>
+      <footer className="border-t">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-sm text-muted-foreground">
+          <p>Concept Carton</p>
+          <p>Powered by VAPI</p>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

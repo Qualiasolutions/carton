@@ -35,6 +35,9 @@ export default async function LeadsPage() {
           <nav className="flex items-center gap-4">
             <a href="/" className="text-sm text-muted-foreground hover:text-foreground">Calendar</a>
             <a href="/leads" className="text-sm font-medium">Leads</a>
+            <a href="/call" className="ml-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">
+              Call
+            </a>
           </nav>
         </div>
       </header>
