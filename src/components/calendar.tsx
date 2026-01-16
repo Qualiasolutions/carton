@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, Phone, Clock, User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { motion, AnimatePresence } from 'motion/react'
+import { ChevronLeft, ChevronRight, Phone, Clock, User, Calendar as CalendarIcon } from 'lucide-react'
 
 interface Appointment {
   id: string
@@ -22,6 +21,7 @@ export function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [direction, setDirection] = useState(0)
 
   useEffect(() => {
     fetchAppointments()
@@ -55,166 +55,266 @@ export function Calendar() {
   }
 
   const prevMonth = () => {
+    setDirection(-1)
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))
   }
 
   const nextMonth = () => {
+    setDirection(1)
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))
   }
 
   const { daysInMonth, startingDay } = getDaysInMonth(currentDate)
   const today = new Date()
-
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Calendar Grid */}
-      <div className="lg:col-span-2 bg-card border rounded-xl p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">
-            {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h2>
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" onClick={prevMonth}>
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={nextMonth}>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {DAYS.map(day => (
-            <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
-              {day}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="lg:col-span-2 relative group"
+      >
+        {/* Glass card with animated border */}
+        <div className="absolute -inset-[1px] bg-gradient-to-r from-emerald-500/50 via-teal-500/50 to-cyan-500/50 rounded-2xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
+        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/20 rounded-lg">
+                <CalendarIcon className="w-5 h-5 text-emerald-400" />
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.h2
+                  key={currentDate.toISOString()}
+                  initial={{ opacity: 0, x: direction * 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction * -20 }}
+                  className="text-2xl font-bold text-white"
+                >
+                  {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
+                </motion.h2>
+              </AnimatePresence>
             </div>
-          ))}
-        </div>
-
-        {/* Calendar days */}
-        <div className="grid grid-cols-7 gap-1">
-          {/* Empty cells for days before month starts */}
-          {Array.from({ length: startingDay }).map((_, i) => (
-            <div key={`empty-${i}`} className="aspect-square" />
-          ))}
-
-          {/* Days of the month */}
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
-            const isToday = date.toDateString() === today.toDateString()
-            const isSelected = selectedDate?.toDateString() === date.toDateString()
-            const dayAppointments = getAppointmentsForDate(date)
-            const hasAppointments = dayAppointments.length > 0
-
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDate(date)}
-                className={`
-                  aspect-square p-1 rounded-lg text-sm transition-all relative
-                  hover:bg-muted
-                  ${isToday ? 'bg-primary/10 font-bold' : ''}
-                  ${isSelected ? 'ring-2 ring-primary bg-primary/20' : ''}
-                `}
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={prevMonth}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
               >
-                <span className={isToday ? 'text-primary' : ''}>{day}</span>
-                {hasAppointments && (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-                    {dayAppointments.slice(0, 3).map((_, idx) => (
-                      <div key={idx} className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    ))}
-                  </div>
-                )}
-              </button>
-            )
-          })}
+                <ChevronLeft className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={nextMonth}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-1 mb-4">
+            {DAYS.map(day => (
+              <div key={day} className="text-center text-sm font-medium text-white/40 py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar days */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentDate.toISOString()}
+              initial={{ opacity: 0, x: direction * 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -50 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-7 gap-1"
+            >
+              {/* Empty cells */}
+              {Array.from({ length: startingDay }).map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square" />
+              ))}
+
+              {/* Days */}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1
+                const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day)
+                const isToday = date.toDateString() === today.toDateString()
+                const isSelected = selectedDate?.toDateString() === date.toDateString()
+                const dayAppointments = getAppointmentsForDate(date)
+                const hasAppointments = dayAppointments.length > 0
+
+                return (
+                  <motion.button
+                    key={day}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.01 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedDate(date)}
+                    className={`
+                      aspect-square p-1 rounded-xl text-sm font-medium transition-all relative
+                      ${isToday ? 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/50' : 'text-white/70 hover:bg-white/10 hover:text-white'}
+                      ${isSelected ? 'ring-2 ring-cyan-400 bg-cyan-500/20 text-cyan-300' : ''}
+                    `}
+                  >
+                    <span className="relative z-10">{day}</span>
+                    {hasAppointments && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5"
+                      >
+                        {dayAppointments.slice(0, 3).map((_, idx) => (
+                          <span key={idx} className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                        ))}
+                      </motion.div>
+                    )}
+                  </motion.button>
+                )
+              })}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
 
       {/* Appointments Panel */}
-      <div className="bg-card border rounded-xl p-6">
-        <h3 className="font-semibold mb-4">
-          {selectedDate
-            ? selectedDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
-            : 'Select a date'}
-        </h3>
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="relative group"
+      >
+        <div className="absolute -inset-[1px] bg-gradient-to-br from-cyan-500/30 to-emerald-500/30 rounded-2xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
+        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 h-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedDate?.toISOString() || 'none'}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <h3 className="font-bold text-white text-lg mb-4">
+                {selectedDate
+                  ? selectedDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
+                  : 'Select a date'}
+              </h3>
 
-        {selectedDate && selectedAppointments.length === 0 && (
-          <p className="text-muted-foreground text-sm">No appointments scheduled</p>
-        )}
-
-        <div className="space-y-3">
-          {selectedAppointments.map(apt => (
-            <div key={apt.id} className="p-4 bg-muted/50 rounded-lg space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">{apt.lead_name}</span>
+              {selectedDate && selectedAppointments.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+                    <CalendarIcon className="w-6 h-6 text-white/30" />
+                  </div>
+                  <p className="text-white/40 text-sm">No appointments</p>
                 </div>
-                <Badge variant="outline">{apt.status}</Badge>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {new Date(apt.appointment_time).toLocaleTimeString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-                <span>({apt.duration_minutes} min)</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="w-3 h-3" />
-                {apt.lead_phone}
-              </div>
-              {apt.notes && (
-                <p className="text-sm text-muted-foreground mt-2">{apt.notes}</p>
               )}
-            </div>
-          ))}
-        </div>
 
-        {/* Upcoming appointments */}
-        {!selectedDate && appointments.length > 0 && (
-          <>
-            <h4 className="text-sm font-medium text-muted-foreground mt-6 mb-3">Upcoming</h4>
-            <div className="space-y-3">
-              {appointments
-                .filter(apt => new Date(apt.appointment_time) >= today)
-                .slice(0, 5)
-                .map(apt => (
-                  <div key={apt.id} className="p-3 bg-muted/50 rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <span className="font-medium text-sm">{apt.lead_name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(apt.appointment_time).toLocaleDateString('en-GB', {
-                          day: 'numeric',
-                          month: 'short'
-                        })}
+              <div className="space-y-3">
+                {selectedAppointments.map((apt, idx) => (
+                  <motion.div
+                    key={apt.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="p-4 rounded-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-emerald-500/30 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-semibold text-white">{apt.lead_name}</span>
+                      </div>
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        {apt.status}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(apt.appointment_time).toLocaleTimeString('en-GB', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Clock className="w-4 h-4 text-cyan-400" />
+                        {new Date(apt.appointment_time).toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                        <span className="text-white/40">({apt.duration_minutes} min)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Phone className="w-4 h-4 text-emerald-400" />
+                        {apt.lead_phone}
+                      </div>
+                    </div>
+                    {apt.notes && (
+                      <p className="mt-3 text-sm text-white/40 italic">{apt.notes}</p>
+                    )}
+                  </motion.div>
                 ))}
-            </div>
-          </>
-        )}
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
-        {appointments.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">No appointments yet</p>
-            <p className="text-xs mt-1">Sophie will book appointments during calls</p>
-          </div>
-        )}
-      </div>
+          {/* Upcoming appointments */}
+          {!selectedDate && appointments.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Upcoming</h4>
+              <div className="space-y-2">
+                {appointments
+                  .filter(apt => new Date(apt.appointment_time) >= today)
+                  .slice(0, 5)
+                  .map((apt, idx) => (
+                    <motion.div
+                      key={apt.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={{ x: 4 }}
+                      className="p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer transition-all"
+                      onClick={() => setSelectedDate(new Date(apt.appointment_time))}
+                    >
+                      <div className="flex justify-between items-start">
+                        <span className="font-medium text-white text-sm">{apt.lead_name}</span>
+                        <span className="text-xs text-emerald-400">
+                          {new Date(apt.appointment_time).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-white/40 mt-1">
+                        {new Date(apt.appointment_time).toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </motion.div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {appointments.length === 0 && !selectedDate && (
+            <div className="text-center py-12">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200 }}
+                className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center"
+              >
+                <CalendarIcon className="w-8 h-8 text-emerald-400" />
+              </motion.div>
+              <p className="text-white/50 text-sm">No appointments yet</p>
+              <p className="text-white/30 text-xs mt-1">Sophie will book during calls</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   )
 }
