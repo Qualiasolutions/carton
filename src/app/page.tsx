@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { LeadsTable } from '@/components/leads-table'
 import { createServerClient } from '@/lib/supabase'
 
@@ -163,14 +164,16 @@ export default async function DashboardPage() {
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">C</span>
-            </div>
-            <div>
-              <h1 className="font-semibold">Carton</h1>
-              <p className="text-xs text-muted-foreground">Voice AI Lead Follow-up</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.svg"
+              alt="Concept Carton"
+              width={180}
+              height={40}
+              priority
+              className="dark:invert-0"
+            />
+            <span className="text-xs text-muted-foreground border-l pl-2 ml-1">Voice AI</span>
           </div>
 
           {isDemo && (
