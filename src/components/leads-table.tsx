@@ -102,13 +102,13 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
     }
   }
 
-  const triggerCall = async (leadId: string) => {
+  const triggerCall = async (leadId: string, leadName: string) => {
     setCallingLead(leadId)
     try {
       const res = await fetch('/api/calls/trigger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadId })
+        body: JSON.stringify({ leadId, leadName })
       })
 
       const data = await res.json()
@@ -117,9 +117,7 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
         throw new Error(data.error || 'Failed to start call')
       }
 
-      toast.success('Call initiated!')
-      // Refresh to see updated status
-      setTimeout(refreshLeads, 2000)
+      toast.success('Calling Jay now!')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to start call')
     } finally {
@@ -248,7 +246,7 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
                           size="sm"
                           variant={isCallDisabled ? 'outline' : 'default'}
                           disabled={isCallDisabled || callingLead === lead.id}
-                          onClick={() => triggerCall(lead.id)}
+                          onClick={() => triggerCall(lead.id, lead.name)}
                         >
                           {callingLead === lead.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -363,7 +361,7 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
                 <Button
                   disabled={selectedLead.status === 'calling' || selectedLead.status === 'booked' || callingLead === selectedLead.id}
                   onClick={() => {
-                    triggerCall(selectedLead.id)
+                    triggerCall(selectedLead.id, selectedLead.name)
                     setSelectedLead(null)
                   }}
                 >

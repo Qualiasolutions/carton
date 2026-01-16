@@ -1,90 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
 import { createOutboundCall } from '@/lib/vapi'
 
-// Trigger an outbound call to a lead
+const DEMO_NUMBER = '+447920274763' // Jay Skipworth
+
 export async function POST(request: NextRequest) {
   try {
-    const { leadId } = await request.json()
-    const supabase = createServerClient()
+    const { leadId, leadName } = await request.json()
 
-    // Get lead details
-    const { data: lead, error: leadError } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('id', leadId)
-      .single()
-
-    if (leadError || !lead) {
-      return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
-    }
-
-    if (!lead.phone) {
-      return NextResponse.json({ error: 'Lead has no phone number' }, { status: 400 })
-    }
-
-    // Check required env vars
     const assistantId = process.env.VAPI_ASSISTANT_ID
     const phoneNumberId = process.env.VAPI_PHONE_NUMBER_ID
 
     if (!assistantId || !phoneNumberId) {
-      return NextResponse.json({
-        error: 'VAPI not configured. Set VAPI_ASSISTANT_ID and VAPI_PHONE_NUMBER_ID'
-      }, { status: 500 })
+      return NextResponse.json({ error: 'VAPI not configured' }, { status: 500 })
     }
 
-    // Create call record first
-    const { data: callRecord, error: callError } = await supabase
-      .from('calls')
-      .insert({
-        lead_id: leadId,
-        status: 'pending'
-      })
-      .select()
-      .single()
-
-    if (callError) {
-      return NextResponse.json({ error: 'Failed to create call record' }, { status: 500 })
-    }
-
-    // Update lead status
-    await supabase
-      .from('leads')
-      .update({ status: 'calling' })
-      .eq('id', leadId)
-
-    // Demo mode: Always call the demo number for testing
-    const DEMO_NUMBER = '+447920274763'
-
-    // Trigger VAPI call
+    // Call immediately
     const vapiCall = await createOutboundCall({
       assistantId,
       phoneNumberId,
-      customerNumber: DEMO_NUMBER, // Demo: always call Fawzi's number
+      customerNumber: DEMO_NUMBER,
       assistantOverrides: {
         variableValues: {
-          lead_name: lead.name,
+          lead_name: leadName || 'there',
           practice_name: 'Concept Carton'
         }
       }
     })
 
-    // Update call record with VAPI call ID
-    await supabase
-      .from('calls')
-      .update({ vapi_call_id: vapiCall.id })
-      .eq('id', callRecord.id)
-
-    return NextResponse.json({
-      success: true,
-      callId: callRecord.id,
-      vapiCallId: vapiCall.id
-    })
+    return NextResponse.json({ success: true, callId: vapiCall.id })
 
   } catch (error) {
-    console.error('Trigger call error:', error)
+    console.error('Call error:', error)
     return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Failed to trigger call'
+      error: error instanceof Error ? error.message : 'Call failed'
     }, { status: 500 })
   }
 }
