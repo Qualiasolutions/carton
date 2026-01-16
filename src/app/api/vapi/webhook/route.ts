@@ -17,18 +17,17 @@ export async function POST(request: NextRequest) {
             const { name, arguments: args } = toolCall.function
 
             if (name === 'book_appointment') {
-              const { date, time, notes } = args as { date: string; time: string; notes?: string }
+              const { customer_name, date, time, notes } = args as { customer_name: string; date: string; time: string; notes?: string }
               const appointmentTime = new Date(`${date}T${time}:00`)
 
-              // Get customer info from call
+              // Get customer phone from call
               const customerNumber = body.call?.customer?.number || 'Unknown'
-              const customerName = body.call?.assistantOverrides?.variableValues?.lead_name || 'Unknown'
 
               // Save to appointments table
               const { error } = await supabase
                 .from('appointments')
                 .insert({
-                  lead_name: customerName,
+                  lead_name: customer_name || 'Unknown',
                   lead_phone: customerNumber,
                   appointment_time: appointmentTime.toISOString(),
                   notes: notes || null
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
                 toolCallId: toolCall.id,
                 result: JSON.stringify({
                   success: true,
-                  message: `Appointment confirmed for ${date} at ${time}`
+                  message: `Appointment confirmed for ${customer_name} on ${date} at ${time}`
                 })
               }
             }
