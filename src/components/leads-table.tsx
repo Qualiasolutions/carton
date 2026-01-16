@@ -66,6 +66,29 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
     }
   }
 
+  const syncDemo = async () => {
+    setLoading(true)
+    try {
+      const syncRes = await fetch('/api/demo/sync', { method: 'POST' })
+      if (!syncRes.ok) {
+        const error = await syncRes.json()
+        throw new Error(error.error || 'Demo sync failed')
+      }
+
+      const syncData = await syncRes.json()
+      toast.success(`Added ${syncData.synced} demo leads`)
+
+      // Refresh leads list
+      const res = await fetch('/api/ghl/sync')
+      const data = await res.json()
+      setLeads(data.leads || [])
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to sync demo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const refreshLeads = async () => {
     setLoading(true)
     try {
@@ -133,6 +156,15 @@ export function LeadsTable({ initialLeads }: LeadsTableProps) {
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={syncDemo}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Sync Demo
             </Button>
             <Button
               size="sm"
