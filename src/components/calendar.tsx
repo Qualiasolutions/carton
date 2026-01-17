@@ -69,22 +69,22 @@ export function Calendar() {
   const selectedAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : []
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       {/* Calendar Grid */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="lg:col-span-2 relative group"
+        className="lg:col-span-2 relative group min-h-0"
       >
         {/* Glass card with animated border */}
         <div className="absolute -inset-[1px] bg-gradient-to-r from-emerald-500/50 via-teal-500/50 to-cyan-500/50 rounded-2xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
-        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/10 h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <CalendarIcon className="w-5 h-5 text-emerald-400" />
+          <div className="flex items-center justify-between mb-4 sm:mb-6 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-1.5 sm:p-2 bg-emerald-500/20 rounded-lg">
+                <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
               </div>
               <AnimatePresence mode="wait">
                 <motion.h2
@@ -92,36 +92,36 @@ export function Calendar() {
                   initial={{ opacity: 0, x: direction * 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: direction * -20 }}
-                  className="text-2xl font-bold text-white"
+                  className="text-lg sm:text-2xl font-bold text-white"
                 >
                   {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
                 </motion.h2>
               </AnimatePresence>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={prevMonth}
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
+                className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={nextMonth}
-                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
+                className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
             </div>
           </div>
 
           {/* Day headers */}
-          <div className="grid grid-cols-7 gap-1 mb-4">
+          <div className="grid grid-cols-7 gap-1 mb-2 sm:mb-4 shrink-0">
             {DAYS.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-white/40 py-2">
+              <div key={day} className="text-center text-xs sm:text-sm font-medium text-white/40 py-1 sm:py-2">
                 {day}
               </div>
             ))}
@@ -135,7 +135,7 @@ export function Calendar() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction * -50 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-7 gap-1"
+              className="grid grid-cols-7 gap-1 flex-1"
             >
               {/* Empty cells */}
               {Array.from({ length: startingDay }).map((_, i) => (
@@ -157,11 +157,11 @@ export function Calendar() {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.01 }}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedDate(date)}
                     className={`
-                      aspect-square p-1 rounded-xl text-sm font-medium transition-all relative
+                      aspect-square p-0.5 sm:p-1 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all relative
                       ${isToday ? 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/50' : 'text-white/70 hover:bg-white/10 hover:text-white'}
                       ${isSelected ? 'ring-2 ring-cyan-400 bg-cyan-500/20 text-cyan-300' : ''}
                     `}
@@ -171,10 +171,10 @@ export function Calendar() {
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5"
+                        className="absolute bottom-0.5 sm:bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5"
                       >
                         {dayAppointments.slice(0, 3).map((_, idx) => (
-                          <span key={idx} className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+                          <span key={idx} className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
                         ))}
                       </motion.div>
                     )}
@@ -191,10 +191,10 @@ export function Calendar() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="relative group"
+        className="relative group min-h-0 hidden lg:block"
       >
         <div className="absolute -inset-[1px] bg-gradient-to-br from-cyan-500/30 to-emerald-500/30 rounded-2xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
-        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 h-full">
+        <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/10 h-full overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedDate?.toISOString() || 'none'}

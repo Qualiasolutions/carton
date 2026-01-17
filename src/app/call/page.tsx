@@ -73,7 +73,7 @@ export default function CallPage() {
   const isActive = status === 'connecting' || status === 'connected'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
       {/* Animated background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -94,35 +94,36 @@ export default function CallPage() {
       </div>
 
       {/* Header */}
-      <header className="relative border-b border-white/10 bg-black/20 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="relative shrink-0 border-b border-white/10 bg-black/20 backdrop-blur-xl z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/50 blur-xl rounded-full" />
               <Image
                 src="/logo.svg"
                 alt="Concept Carton"
-                width={180}
-                height={40}
+                width={140}
+                height={32}
                 priority
-                className="relative brightness-0 invert"
+                className="relative brightness-0 invert sm:w-[180px]"
               />
             </div>
-            <div className="h-6 w-px bg-white/20" />
-            <span className="text-xs font-medium text-emerald-400/80 tracking-wider uppercase">Voice AI</span>
+            <div className="hidden sm:block h-6 w-px bg-white/20" />
+            <span className="hidden sm:block text-xs font-medium text-emerald-400/80 tracking-wider uppercase">Voice AI</span>
           </div>
           <nav className="flex items-center gap-2">
-            <a href="/" className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+            <a href="/" className="px-3 sm:px-4 py-2 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all">
               Calendar
             </a>
             <a
               href="/call"
-              className="group relative px-5 py-2.5 text-sm font-semibold text-white rounded-xl overflow-hidden"
+              className="group relative px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-semibold text-white rounded-xl overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 opacity-90" />
               <span className="relative flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                Call Sophie
+                <span className="hidden sm:inline">Call Sophie</span>
+                <span className="sm:hidden">Call</span>
               </span>
             </a>
           </nav>
@@ -130,19 +131,19 @@ export default function CallPage() {
       </header>
 
       {/* Main Content */}
-      <main className="relative flex flex-col items-center justify-center p-6" style={{ minHeight: 'calc(100vh - 140px)' }}>
+      <main className="relative flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center space-y-8 max-w-md"
+          className="text-center space-y-6 sm:space-y-8 max-w-md"
         >
           <div>
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-5xl font-bold text-white tracking-tight mb-4"
+              className="text-3xl sm:text-5xl font-bold text-white tracking-tight mb-2 sm:mb-4"
             >
               Talk to <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Sophie</span>
             </motion.h1>
@@ -150,7 +151,7 @@ export default function CallPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-white/50 text-lg"
+              className="text-white/50 text-base sm:text-lg"
             >
               {status === 'idle' && 'Click to start a conversation'}
               {status === 'connecting' && 'Connecting...'}
@@ -159,7 +160,7 @@ export default function CallPage() {
             </motion.p>
           </div>
 
-          <div className="flex gap-6 justify-center items-center">
+          <div className="flex gap-4 sm:gap-6 justify-center items-center">
             {/* Main call button */}
             <motion.button
               initial={{ scale: 0 }}
@@ -172,20 +173,20 @@ export default function CallPage() {
               className="relative group"
             >
               {/* Outer glow ring */}
-              <div className={`absolute -inset-4 rounded-full blur-xl transition-all duration-500 ${
+              <div className={`absolute -inset-3 sm:-inset-4 rounded-full blur-xl transition-all duration-500 ${
                 isActive
                   ? 'bg-red-500/40 animate-pulse'
                   : 'bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-cyan-500/40 group-hover:from-emerald-500/60 group-hover:via-teal-500/60 group-hover:to-cyan-500/60'
               }`} />
 
               {/* Button */}
-              <div className={`relative w-36 h-36 rounded-full flex items-center justify-center transition-all duration-300 ${
+              <div className={`relative w-28 h-28 sm:w-36 sm:h-36 rounded-full flex items-center justify-center transition-all duration-300 ${
                 isActive
                   ? 'bg-gradient-to-br from-red-500 to-red-600'
                   : 'bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500'
               }`}>
                 {/* Inner ring */}
-                <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
+                <div className="absolute inset-1.5 sm:inset-2 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
 
                 <AnimatePresence mode="wait">
                   {status === 'connecting' ? (
@@ -196,7 +197,7 @@ export default function CallPage() {
                       exit={{ opacity: 0 }}
                       transition={{ rotate: { duration: 1, repeat: Infinity, ease: "linear" } }}
                     >
-                      <Loader2 className="w-14 h-14 text-white" />
+                      <Loader2 className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
                     </motion.div>
                   ) : isActive ? (
                     <motion.div
@@ -205,7 +206,7 @@ export default function CallPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
                     >
-                      <PhoneOff className="w-14 h-14 text-white" />
+                      <PhoneOff className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -214,7 +215,7 @@ export default function CallPage() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.5 }}
                     >
-                      <Phone className="w-14 h-14 text-white" />
+                      <Phone className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -236,15 +237,15 @@ export default function CallPage() {
                   <div className={`absolute -inset-2 rounded-full blur-lg transition-all ${
                     isMuted ? 'bg-red-500/40' : 'bg-white/20 group-hover:bg-white/30'
                   }`} />
-                  <div className={`relative w-20 h-20 rounded-full flex items-center justify-center border-2 transition-all ${
+                  <div className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center border-2 transition-all ${
                     isMuted
                       ? 'bg-red-500/20 border-red-500/50'
                       : 'bg-white/10 border-white/20 hover:bg-white/20'
                   }`}>
                     {isMuted ? (
-                      <MicOff className="w-8 h-8 text-red-400" />
+                      <MicOff className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" />
                     ) : (
-                      <Mic className="w-8 h-8 text-white" />
+                      <Mic className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     )}
                   </div>
                 </motion.button>
@@ -318,10 +319,10 @@ export default function CallPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative border-t border-white/10 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <p className="text-white/30 text-sm">Concept Carton</p>
-          <div className="flex items-center gap-2 text-white/30 text-sm">
+      <footer className="relative shrink-0 border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <p className="text-white/30 text-xs sm:text-sm">Concept Carton</p>
+          <div className="flex items-center gap-2 text-white/30 text-xs sm:text-sm">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
             Powered by VAPI
           </div>
