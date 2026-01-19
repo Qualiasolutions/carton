@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronLeft, ChevronRight, Phone, Clock, User, Calendar as CalendarIcon } from 'lucide-react'
+import { createBrowserClient } from '@/lib/supabase'
 
 interface Appointment {
   id: string
@@ -23,11 +24,7 @@ export function Calendar() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [direction, setDirection] = useState(0)
 
-  useEffect(() => {
-    fetchAppointments()
-  }, [])
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       const res = await fetch('/api/appointments')
       const data = await res.json()
@@ -35,7 +32,29 @@ export function Calendar() {
     } catch (error) {
       console.error('Failed to fetch appointments:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchAppointments()
+
+    // Set up real-time subscription for new appointments
+    const supabase = createBrowserClient()
+    const channel = supabase
+      .channel('appointments-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'appointments' },
+        () => {
+          // Refresh appointments when any change occurs
+          fetchAppointments()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fetchAppointments])
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -244,7 +263,7 @@ export function Calendar() {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}
-                        <span className="text-white/40">({apt.duration_minutes} min)</span>
+                        <span className="text-white/40">({apt.duration_minutes || 30} min)</span>
                       </div>
                       <div className="flex items-center gap-2 text-white/60">
                         <Phone className="w-4 h-4 text-emerald-400" />

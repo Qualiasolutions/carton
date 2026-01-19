@@ -102,7 +102,9 @@ export async function POST(request: NextRequest) {
                   lead_name: customer_name || 'Unknown',
                   lead_phone: customerNumber,
                   appointment_time: appointmentTime.toISOString(),
-                  notes: notes || null
+                  duration_minutes: 30,
+                  notes: notes || null,
+                  status: 'scheduled'
                 })
 
               if (error) {
